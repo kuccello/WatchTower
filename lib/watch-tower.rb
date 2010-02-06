@@ -44,6 +44,12 @@ module SoldierOfCode
       false
     end
 
+    # dethenticate -- step out of the logged in session token
+    send :define_method, :dethenticate do
+      # should return a token key and token value
+      throw "You need to implement the dethenticate method on #{self.class.name} which clears the session token key"
+    end
+
     # authenticate -- perform authentication against usr/pass
     send :define_method, :authenticate do |usr_id, pass|
       # should return a token key and token value
@@ -90,6 +96,11 @@ module SoldierOfCode
     send :define_method, :login_uri do
       # should return a token key and token value
       throw "You need to implement the login_uri method on #{self.class.name} which returns a uri to its login view"
+    end
+
+    send :define_method, :logout_uri do
+      # should return a token key and token value
+      throw "You need to implement the logout_uri method on #{self.class.name} which returns a uri to its logout handler"
     end
 
 

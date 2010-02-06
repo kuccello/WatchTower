@@ -5,8 +5,16 @@ class App1Deligate
     '/login'
   end
 
+  def logout_uri
+    '/logout'
+  end
+
   def token_keys
     [:app1,:default]
+  end
+
+  def dethenticate(env)
+    env['rack.session'][:app1] = nil
   end
 
   def authenticate(usr_id, pass)
