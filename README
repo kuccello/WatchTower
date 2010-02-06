@@ -1,0 +1,70 @@
+Watch Tower:
+=================
+
+"RANT –verb (used without object)
+ to speak or declaim extravagantly or violently;
+ talk in a wild or vehement way;
+ rave: The demagogue ranted for hours."
+
+I have come to dispise all authentication systems. Put simply they are overy abstract in my humble opinion.
+Sure in small applications you can get away with a roll your own auth system based on simple principals such
+as using a cookie or session combined with some form of authentication like user/pass processing. So I feel
+completly comfortable saying that the small apps have it covered and then there are the big applications that
+span multiple machines and have session servers to act as stateful verification of user presence and roll based
+access. This are is covered by a bunch of different technologies already - I'm not getting into that right now.
+
+I write applications that for the most part are sinatra based. I have my own way of seperating out concerns
+by way of user responsibilites. So most of my web apps are actually three web apps working togeather. I usually
+have an admin app for me to use when managing the site's customers, then I have a customer app for my direct
+customers to use, and then I might have a front facing application for the rest of the web to see that is public,
+I call this one "public". So I need admin login authentication and customer login authentication. Hmmm does not
+seem to warent a roll based system as I only have two class of credentialed users as well I have already
+seperated out their concerns by way of writting them out as two applications. After fucking around with warden
+and many other types of authentication gems out there on github I found myself constantly saying "this does not
+do what I want it to" or "I really don't like what I have to do to manage this". I took a step back and pulled
+out a graph pad and pen and sketched out a couple of questions:
+
+1. do I know you? are you logged in? (look for token key values)
+2. who are you? (provide a login method)
+3. are you who you say you are? (validate login credentials)
+4. are you allowed to access what you are trying to access? (does the token match the rules?)
+
+this of course took me to the two things every authentication system has
+
+Authentication & Authorization
+
+Watch Tower works of the principal of least reseistance with the use of leathal force. Basically you tell it
+what to protect and how.
+
+Example config.ru from the example directory:
+
+require 'rack'
+require 'sinatra'
+require 'haml'
+require 'dirge' # see http://github.com/joshbuddy/dirge/
+
+# replace this require with require 'watch-tower' in your code
+require ::File.join(::File.dirname(__FILE__),'../lib/watch-tower.rb')
+
+# our app files
+require ~'app1/app1'
+require ~'app1/app1_deligate'
+require ~'app2/app2'
+require ~'login_handler/login_handler'
+
+use Rack::Session::Pool, :expire_after => 60 * 30 # 30 minute timeout on sessons
+
+use SoldierOfCode::TowerGate, { '/app1/'=>App1Deligate,
+                                '/app2/'=>App2}
+
+map '/app2/' do
+  run App2
+end
+
+map '/app1/' do
+  run App1
+end
+
+map '/' do
+  run LoginHandler
+end
